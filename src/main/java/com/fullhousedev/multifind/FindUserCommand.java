@@ -26,9 +26,19 @@ public class FindUserCommand extends Command {
         plugin.getProxy().getScheduler().runAsync(plugin, new Runnable() {
             @Override
             public void run() {
-                try(Jedis redis = plugin.getRedisConnection()) {
-                    if(redis.exists(args[0].toLowerCase())) {
-                        String server = redis.get(args[0].toLowerCase());
+                if(plugin.runningOnRedis()) {
+                    try (Jedis redis = plugin.getRedisConnection()) {
+                        if (redis.exists(args[0].toLowerCase())) {
+                            String server = redis.get(args[0].toLowerCase());
+                            commandSender.sendMessage(ChatConstants.userFound(args[0], server));
+                        } else {
+                            commandSender.sendMessage(ChatConstants.userNotFound(args[0]));
+                        }
+                    }
+                }
+                else {
+                    if(plugin.getPlayerManager().isPlayerLoggedIn(args[0].toLowerCase())) {
+                        String server = plugin.getPlayerManager().getServer(args[0].toLowerCase());
                         commandSender.sendMessage(ChatConstants.userFound(args[0], server));
                     }
                     else {
